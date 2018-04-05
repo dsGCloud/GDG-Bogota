@@ -1,0 +1,9 @@
+imports:
+- path: cluster.py
+
+resources:
+- name: dataproc
+  type: cluster.py
+  properties:
+    region: us-east1
+    zone: us-east1-d
