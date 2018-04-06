@@ -1,1 +1,2 @@
-#!/usr/bin/env bash
+#!/bin/bash
+sudo python -m SimpleHTTPServer 8080
