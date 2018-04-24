@@ -1,0 +1,114 @@
+POST https://www.googleapis.com/compute/v1/projects/glob-gcp-002/global/healthChecks
+{
+  "name": "hc-1",
+  "description": "",
+  "checkIntervalSec": 10,
+  "timeoutSec": 5,
+  "unhealthyThreshold": 5,
+  "healthyThreshold": 2,
+  "selfLink": "projects/glob-gcp-002/global/healthChecks/hc-1",
+  "type": "TCP",
+  "httpHealthCheck": null,
+  "httpsHealthCheck": null,
+  "http2HealthCheck": null,
+  "tcpHealthCheck": {
+    "port": 80,
+    "request": null,
+    "response": null,
+    "proxyHeader": "PROXY_V1"
+  },
+  "sslHealthCheck": null,
+  "udpHealthCheck": null
+}
+
+POST https://www.googleapis.com/compute/v1/projects/glob-gcp-002/global/instanceTemplates
+{
+  "name": "instance-template-1",
+  "description": "",
+  "properties": {
+    "minCpuPlatform": "Automatic",
+    "machineType": "n1-standard-1",
+    "metadata": {
+      "items": []
+    },
+    "tags": {
+      "items": [
+        "http-server"
+      ]
+    },
+    "disks": [
+      {
+        "type": "PERSISTENT",
+        "boot": true,
+        "mode": "READ_WRITE",
+        "autoDelete": true,
+        "deviceName": "instance-template-1",
+        "initializeParams": {
+          "sourceImage": "projects/debian-cloud/global/images/debian-9-stretch-v20180401",
+          "diskType": "pd-standard",
+          "diskSizeGb": "10"
+        }
+      }
+    ],
+    "canIpForward": false,
+    "networkInterfaces": [
+      {
+        "network": "projects/glob-gcp-002/global/networks/default",
+        "accessConfigs": [
+          {
+            "name": "External NAT",
+            "type": "ONE_TO_ONE_NAT"
+          }
+        ],
+        "aliasIpRanges": []
+      }
+    ],
+    "labels": {},
+    "scheduling": {
+      "preemptible": false,
+      "onHostMaintenance": "MIGRATE",
+      "automaticRestart": true
+    },
+    "serviceAccounts": [
+      {
+        "email": "248195474587-compute@developer.gserviceaccount.com",
+        "scopes": [
+          "https://www.googleapis.com/auth/devstorage.read_only",
+          "https://www.googleapis.com/auth/logging.write",
+          "https://www.googleapis.com/auth/monitoring.write",
+          "https://www.googleapis.com/auth/servicecontrol",
+          "https://www.googleapis.com/auth/service.management.readonly",
+          "https://www.googleapis.com/auth/trace.append"
+        ]
+      }
+    ]
+  }
+}
+
+POST https://www.googleapis.com/compute/v1/projects/glob-gcp-002/regions/us-east1/instanceGroupManagers
+{
+  "name": "instance-group-1",
+  "instanceTemplate": "https://clients6.google.com/compute/v1/projects/glob-gcp-002/global/instanceTemplates/instance-template-1",
+  "baseInstanceName": "instance-group-1",
+  "targetSize": 3,
+  "autoHealingPolicies": [
+    {
+      "initialDelaySec": 300,
+      "healthCheck": "projects/glob-gcp-002/global/healthChecks/hc-1"
+    }
+  ]
+}
+
+POST https://www.googleapis.com/compute/v1/projects/glob-gcp-002/regions/us-east1/autoscalers
+{
+  "name": "instance-group-1",
+  "target": "https://clients6.google.com/compute/v1/projects/glob-gcp-002/regions/us-east1/instanceGroupManagers/instance-group-1",
+  "autoscalingPolicy": {
+    "minNumReplicas": 3,
+    "maxNumReplicas": 10,
+    "coolDownPeriodSec": 60,
+    "cpuUtilization": {
+      "utilizationTarget": 0.6
+    }
+  }
+}

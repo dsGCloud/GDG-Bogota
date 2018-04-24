@@ -29,14 +29,14 @@ resources:
        name: boot
        imageProject: debian-cloud
        imageFamily: debian-9
-     - sizeGb: 200
+     - sizeGb: 10
        diskType: pd-standard
        name: backup
-     - sizeGb: 20
+     - sizeGb: 10
        diskType: pd-ssd
        name: cache
     tags:
      - http-server
-     - front-server
+     - test-port
     metadata-from-file:
       startup-script: startup-script.sh

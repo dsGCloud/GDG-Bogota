@@ -1,0 +1,53 @@
+info:
+  title: API Usage Cloud Functions
+  author: GDG Bogota
+  description: Template to deploy a cloud function from code
+
+required:
+- codeLocation
+- sourceArchiveUrl
+
+properties:
+  codeLocation:
+    type: string
+    description: Prefix from the imports that will be packed in the cloud function
+
+  sourceArchiveUrl:
+    type: string
+    description: Where the function code will be stored
+
+  location:
+    type: string
+    description: Where the function will be deployed
+
+  timeout:
+    type: string
+    description: Timeout for the function to run
+
+  availableMemoryMb:
+    type: integer
+    description: Available memory for the function
+
+  entrypoint:
+    type: string
+    description: Entrypoint for the function
+
+  eventTrigger:
+    type: array
+    items:
+      type: object
+      required:
+      - eventType
+      properties:
+        eventType:
+            type: string
+        resource:
+            type: string
+        service:
+            type: string
+
+outputs:
+  properties:
+    functionName:
+      type: string
+      description: The name of the function created

@@ -37,7 +37,6 @@ def MachineType(project, zone, machine_type):
 
 def GenerateConfig(context):
     """Creates configuration."""
-    print(context)
 
     resources = []
     project = context.env['project']
@@ -59,7 +58,7 @@ def GenerateConfig(context):
     metadata = {'items': items}
 
     # Create disks resources
-    # boot_disk = filter(lambda disk_obj: disk_obj['name'] == 'boot', context.properties['disks'])
+    # boot_disk = map(lambda x: x, filter(lambda obj: obj['name'] == 'boot', context.properties['disks']))
     # aditional_disks = filter(lambda disk_obj: disk_obj['name'] != 'boot', context.properties['disks'])
     for disk_obj in context.properties['disks']:
         if disk_obj['name'] == 'boot':

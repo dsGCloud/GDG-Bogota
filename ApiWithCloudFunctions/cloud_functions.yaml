@@ -1,0 +1,18 @@
+imports:
+- path: cloud_function.py
+# The functions code will be defined for the files in functions/
+- path: functions/index.js
+- path: functions/package.json
+- path: functions/config.json
+
+resources:
+- name: GCStoPubsub
+  type: cloud_function.py
+  properties:
+    # All the files that start with this prefix will be packed in the Cloud Function
+    codeLocation: functions/
+    sourceArchiveUrl: gs://functions-code/functions.zip
+    location: us-central1
+    timeout: 60s
+    availableMemoryMb: 256
+    entryPoint: GCStoPubsub

@@ -1,6 +1,6 @@
 def GenerateConfig(context):
     """Generate YAML resource configuration."""
-    name_prefix = context.env['deployment'] + 'DataprocCluster'
+    name_prefix = context.env['deployment'] + 'dataproccluster'
     cluster_name = name_prefix
 
     resources = [
