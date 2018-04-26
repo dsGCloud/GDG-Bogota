@@ -152,3 +152,6 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+# API
+ApiWithCloudFunctions/run.sh
+ApiWithCloudFunctions/sql.txt

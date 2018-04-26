@@ -14,7 +14,7 @@
  */
 'use strict';
 // a configuration file defining the pubsub topics and BigQuery details
-const config = require('./config.json');
+const config = require('./config.js');
 
 // Get a reference to the Cloud Storage component
 const storage = require('@google-cloud/storage')();
