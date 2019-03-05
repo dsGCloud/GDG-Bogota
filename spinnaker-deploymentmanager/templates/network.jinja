@@ -56,7 +56,7 @@ resources:
     - IPProtocol: tcp
       ports: ["8081"]
     sourceRanges:
-    - "130.211.0.0/22"
+    - "0.0.0.0/0"
     targetTags:
     - spinnaker-vm
 - type: compute.v1.globalForwardingRule
