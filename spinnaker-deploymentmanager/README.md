@@ -3,7 +3,7 @@
 This repository contains Deployment Manager template for deploying [Spinnaker](http://www.spinnaker.io/).
 By default, this will deploy the following topology:
 
-![](images/spinnaker-arch.png)
+![](images/spinnaker-archi.png)
 
 Spinnaker will store its state in Google Cloud Storage and Redis. Jenkins
 is used to run scripts required during the build process or in order to trigger
