@@ -1,0 +1,122 @@
+# Copyright 2016 Google Inc. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+resources:
+- type: compute.v1.network
+  name: {{ env["deployment"] }}-spinnaker-network
+  properties:
+     name: spinnaker-network
+     autoCreateSubnetworks: false
+- type: compute.v1.subnetwork
+  name: {{ env["deployment"] }}-spinnaker-subnetwork
+  properties:
+    name: {{ env["deployment"] }}-spinnaker-subnetwork
+    network: $(ref.{{ env["deployment"] }}-spinnaker-network.selfLink)
+    ipCidrRange: {{ properties["ipCidrRange"] }}
+    region: {{ properties["region"] }}
+- type: compute.v1.firewall
+  name: spinnaker-vm-ssh-fw
+  properties:
+     name: spinnaker-vm-ssh
+     network: $(ref.{{ env["deployment"] }}-spinnaker-network.selfLink)
+     allowed:
+     - IPProtocol: tcp
+       ports: ["22"]
+     targetTags:
+     - allow-ssh
+- type: compute.v1.firewall
+  name: redis-fw
+  properties:
+    name: redis-vm
+    network: $(ref.{{ env["deployment"] }}-spinnaker-network.selfLink)
+    allowed:
+    - IPProtocol: tcp
+      ports: ["6379"]
+    sourceTags:
+      - spinnaker-vm
+    targetTags:
+      - redis-vm
+- type: compute.v1.firewall
+  name: jenkins-fw
+  properties:
+     name: jenkins-vm-from-spinnaker
+     network: $(ref.{{ env["deployment"] }}-spinnaker-network.selfLink)
+     allowed:
+     - IPProtocol: tcp
+       ports: ["80","8080"]
+     sourceTags:
+     - spinnaker-vm
+     targetTags:
+     - jenkins-vm
+- type: compute.v1.firewall
+  name: jenkins-hc
+  properties:
+    name: jenkins-vm-hc
+    network: $(ref.{{ env["deployment"] }}-spinnaker-network.selfLink)
+    allowed:
+    - IPProtocol: tcp
+      ports: ["80"]
+    sourceRanges:
+    - "130.211.0.0/22"
+    targetTags:
+    - jenkins-vm
+- type: compute.v1.firewall
+  name: spinanker-hc
+  properties:
+    name: spinanker-vm-hc
+    network: $(ref.{{ env["deployment"] }}-spinnaker-network.selfLink)
+    allowed:
+    - IPProtocol: tcp
+      ports: ["8081"]
+    sourceRanges:
+    - "130.211.0.0/22"
+    targetTags:
+    - spinnaker-vm
+- type: compute.v1.globalForwardingRule
+  name: {{ env["deployment"] }}-spinnaker-api-lb
+  properties:
+    IPProtocol: TCP
+    portRange: 80
+    target: $(ref.{{ env["deployment"] }}-spinnaker-api-targetproxy.selfLink)
+- type: compute.v1.targetHttpProxy
+  name: {{ env["deployment"] }}-spinnaker-api-targetproxy
+  properties:
+    urlMap: $(ref.{{ env["deployment"] }}-spinnaker-api.selfLink)
+- type: compute.v1.urlMap
+  name: {{ env["deployment"] }}-spinnaker-api
+  properties:
+    defaultService: $(ref.null-backend.selfLink)
+    hostRules:
+      - hosts: ["*"]
+        pathMatcher: pathmap
+    pathMatchers:
+      - name: pathmap
+        defaultService: $(ref.null-backend.selfLink)
+        pathRules:
+          - paths: ["/gate/webhooks/git/github", "/gate/webhooks/git/github/*"]
+            service: $(ref.{{ env["deployment"] }}-spinnaker-api-backend.selfLink)
+- type: compute.v1.backendService
+  name: null-backend
+  properties:
+    backends: []
+    healthChecks: [ $(ref.{{ env["deployment"] }}-spinnaker-hc.selfLink) ]
+- type: compute.v1.backendService
+  name: {{ env["deployment"] }}-spinnaker-api-backend
+  properties:
+    port: 8081
+    portName: "api"
+    backends:
+      - name: spinnaker-api
+        group: $(ref.{{ env["deployment"] }}-spinnaker-ig.instanceGroup)
+    healthChecks: [ $(ref.{{ env["deployment"] }}-spinnaker-hc.selfLink) ]

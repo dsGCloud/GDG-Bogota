@@ -1,0 +1,109 @@
+# Copyright 2016 Google Inc. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+resources:
+- name: {{ env["deployment"] }}-spinnaker-hc
+  type: compute.v1.httpHealthCheck
+  properties:
+    port: 8081
+- name: {{ env["deployment"] }}-spinnaker-ig
+  type: compute.beta.instanceGroupManager
+  properties:
+    baseInstanceName: {{ env["deployment"] }}-spinnaker
+    instanceTemplate: $(ref.{{ env["deployment"] }}-spinnaker-template.selfLink)
+    targetSize: 1
+    zone: {{ properties["zone"] }}
+    autoHealingPolicies:
+    - healthCheck: $(ref.{{ env["deployment"] }}-spinnaker-hc.selfLink)
+      initialDelaySec: 600
+- name: spinnaker-{{ env["project"] }}-{{ env["deployment"] }}
+  type: storage.v1.bucket
+  properties:
+    name: spinnaker-{{ env["project"] }}-{{ env["deployment"] }}
+- name: {{ env["deployment"] }}-spinnaker-template
+  type: compute.v1.instanceTemplate
+  properties:
+      zone: {{ properties["zone"] }}
+      properties:
+        serviceAccounts:
+          - email: default
+            scopes:
+              - https://www.googleapis.com/auth/compute
+              - https://www.googleapis.com/auth/logging.write
+              - https://www.googleapis.com/auth/monitoring.write
+              - https://www.googleapis.com/auth/devstorage.full_control
+        tags:
+         items:
+           - spinnaker-vm
+           - allow-ssh
+        machineType: {{ properties["machineType"] }}
+        networkInterfaces:
+        - network: $(ref.{{ env["deployment"] }}-spinnaker-network.selfLink)
+          subnetwork: $(ref.{{ env["deployment"] }}-spinnaker-subnetwork.selfLink)
+          networkIP: {{ properties["spinnakerIP"] }}
+          accessConfigs:
+          - name: External NAT
+            type: ONE_TO_ONE_NAT
+        disks:
+        - deviceName: boot
+          type: PERSISTENT
+          boot: true
+          autoDelete: true
+          diskType: pd-ssd
+          diskSizeGb: 256
+          initializeParams:
+            sourceImage: projects/ubuntu-os-cloud/global/images/family/ubuntu-1404-lts
+        metadata:
+          items:
+          - key: deployment
+            value: {{ env["deployment"] }}
+          - key: region
+            value: {{ properties["region"] }}
+          - key: zone
+            value: {{ properties["zone"] }}
+          - key: jenkinsIP
+            value: {{ properties["jenkinsIP"] }}
+          - key: jenkinsPassword
+            value: {{ properties["jenkinsPassword"] }}
+          - key: redisIP
+            value: {{ properties["redisIP"] }}
+          - key: packerVersion
+            value: {{ properties["packerVersion"] }}
+          - key: clouddriverVersion
+            value: {{ properties["clouddriverVersion"] }}
+          - key: deckVersion
+            value: {{ properties["deckVersion"] }}
+          - key: echoVersion
+            value: {{ properties["echoVersion"] }}
+          - key: front50Version
+            value: {{ properties["front50Version"] }}
+          - key: gateVersion
+            value: {{ properties["gateVersion"] }}
+          - key: igorVersion
+            value: {{ properties["igorVersion"] }}
+          - key: orcaVersion
+            value: {{ properties["orcaVersion"] }}
+          - key: roscoVersion
+            value: {{ properties["roscoVersion"] }}
+          - key: spinnakerVersion
+            value: {{ properties["spinnakerVersion"] }}
+          - key: spinnakerLocal
+            value: |
+               {{ imports['spinnaker-local.yml']| indent(15) }}
+          - key: gceAnsible
+            value: |
+               {{ imports['gce-ansible.json']| indent(15) }}
+          - key: startup-script
+            value: |
+               {{ imports['spinnaker.sh']| indent(15) }}
