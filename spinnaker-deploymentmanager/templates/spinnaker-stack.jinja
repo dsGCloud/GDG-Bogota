@@ -25,14 +25,11 @@ resources:
     zone: {{ properties['zone'] }}
     machineType: {{ properties['spinnakerMachineType'] }}
     spinnakerIP: {{ properties['spinnakerIP'] }}
-    jenkinsPassword: {{ properties['jenkinsPassword'] }}
-    jenkinsIP: {{ properties['jenkinsIP'] }}
     redisIP: {{ properties['redisIP'] }}
   metadata:
     dependsOn:
       - spinnaker-network
       - redis
-      - jenkins
 - name: redis
   type: redis.jinja
   properties:
@@ -40,17 +37,6 @@ resources:
     zone: {{ properties['zone'] }}
     machineType: {{ properties['redisMachineType'] }}
     redisIP: {{ properties['redisIP'] }}
-  metadata:
-    dependsOn:
-      - spinnaker-network
-- name: jenkins
-  type: jenkins.jinja
-  properties:
-    region: {{ properties['region'] }}
-    zone: {{ properties['zone'] }}
-    jenkinsMachineType: {{ properties['jenkinsMachineType'] }}
-    jenkinsPassword: {{ properties['jenkinsPassword'] }}
-    jenkinsIP: {{ properties['jenkinsIP'] }}
   metadata:
     dependsOn:
       - spinnaker-network
