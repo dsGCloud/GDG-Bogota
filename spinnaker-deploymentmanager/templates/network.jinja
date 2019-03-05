@@ -48,30 +48,6 @@ resources:
     targetTags:
       - redis-vm
 - type: compute.v1.firewall
-  name: jenkins-fw
-  properties:
-     name: jenkins-vm-from-spinnaker
-     network: $(ref.{{ env["deployment"] }}-spinnaker-network.selfLink)
-     allowed:
-     - IPProtocol: tcp
-       ports: ["80","8080"]
-     sourceTags:
-     - spinnaker-vm
-     targetTags:
-     - jenkins-vm
-- type: compute.v1.firewall
-  name: jenkins-hc
-  properties:
-    name: jenkins-vm-hc
-    network: $(ref.{{ env["deployment"] }}-spinnaker-network.selfLink)
-    allowed:
-    - IPProtocol: tcp
-      ports: ["80"]
-    sourceRanges:
-    - "130.211.0.0/22"
-    targetTags:
-    - jenkins-vm
-- type: compute.v1.firewall
   name: spinanker-hc
   properties:
     name: spinanker-vm-hc
