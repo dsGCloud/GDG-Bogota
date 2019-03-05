@@ -22,8 +22,6 @@ PROJECT_ID=`metadata_value "project/project-id"`
 DEPLOYMENT=`metadata_value "instance/attributes/deployment"`
 REGION=`metadata_value "instance/attributes/region"`
 ZONE=`metadata_value "instance/attributes/zone"`
-JENKINS_IP=`metadata_value "instance/attributes/jenkinsIP"`
-JENKINS_PASSWORD=`metadata_value "instance/attributes/jenkinsPassword"`
 REDIS_IP=`metadata_value "instance/attributes/redisIP"`
 
 PACKER_VERSION=`metadata_value "instance/attributes/packerVersion"`
@@ -67,16 +65,6 @@ sed -i \
   -e '$i\\n  <Location "/gate">\n    Header set Content-Type "application/json; charset=utf-8" \n  </Location>' \
     /etc/apache2/sites-available/spinnaker.conf
 
-# Configure web server proxy for Jenkins
-echo "Listen 0.0.0.0:8082" >> /etc/apache2/ports.conf
-cat > /etc/apache2/sites-available/jenkins.conf <<EOF
-<VirtualHost 0.0.0.0:8082>
-  ProxyPass "/" "http://${JENKINS_IP}:8080/" retry=0
-  ProxyPassReverse "/" "http://${JENKINS_IP}:8080/"
-</VirtualHost>
-EOF
-ln -sf /etc/apache2/sites-available/jenkins.conf /etc/apache2/sites-enabled/jenkins.conf
-
 a2enmod headers
 service apache2 restart
 
@@ -95,18 +83,7 @@ SPINNAKER_DEFAULT_STORAGE_BUCKET=spinnaker-$PROJECT_ID-$DEPLOYMENT
 SPINNAKER_GOOGLE_DEFAULT_REGION=$REGION
 SPINNAKER_GOOGLE_DEFAULT_ZONE=$ZONE
 
-SPINNAKER_JENKINS_ENABLED=true
-SPINNAKER_JENKINS_BASEURL=http://localhost:8082/
-SPINNAKER_JENKINS_USER=jenkins
-SPINNAKER_JENKINS_PASSWORD=$JENKINS_PASSWORD
-
 SPINNAKER_REDIS_HOST=$REDIS_IP
-EOF
-
-cat >> /opt/spinnaker/config/orca.yml <<EOF
-script:
-  master: Jenkins
-  job: runSpinnakerScript
 EOF
 
 metadata_value "instance/attributes/gceAnsible" > /opt/rosco/config/packer/gce-ansible.json
@@ -118,5 +95,4 @@ metadata_value "instance/attributes/spinnakerLocal" > /opt/spinnaker/config/spin
 start spinnaker
 service clouddriver restart
 service rosco restart
-service orca restart
 service igor restart
